@@ -42,6 +42,7 @@ void setup()
     // has2wifi.Setup();
     // has2wifi.Setup("KT_GiGA_6C64","ed46zx1198");
     DataChanged();
+    ActivateFunc();
 }
 void loop()
 {

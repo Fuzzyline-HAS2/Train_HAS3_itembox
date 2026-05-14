@@ -40,31 +40,9 @@ void ExpSend(){
     }
 }
 void BatteryPackSend(){
-    if((String)(const char*)my["battery_pack"] == "1")
-    {
-        sendCommand("picBatteryPack.pic=3");
-        sendCommand("pgItemOpen.vBatteryPack.val=1");
-    }
-    else if((String)(const char*)my["battery_pack"] == "2")
-    {
-        sendCommand("picBatteryPack.pic=4");
-        sendCommand("pgItemOpen.vBatteryPack.val=2");
-    }
-    else if((String)(const char*)my["battery_pack"] == "3")
-    {
-        sendCommand("picBatteryPack.pic=5");
-        sendCommand("pgItemOpen.vBatteryPack.val=3");
-    }
-    else if((String)(const char*)my["battery_pack"] == "4")
-    {
-        sendCommand("picBatteryPack.pic=6");
-        sendCommand("pgItemOpen.vBatteryPack.val=4");
-    }
-    else if((String)(const char*)my["battery_pack"] == "5")
-    {
-        sendCommand("picBatteryPack.pic=7");
-        sendCommand("pgItemOpen.vBatteryPack.val=5");
-    }
+    // 훈련소 시나리오: 배터리 2개 고정
+    sendCommand("picBatteryPack.pic=4");
+    sendCommand("pgItemOpen.vBatteryPack.val=2");
 }
 
 // void BatteryPackSend(){

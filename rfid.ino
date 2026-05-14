@@ -148,6 +148,7 @@ void PuzzleSolved()
   Serial.println("PuzzleSolved");
   AllNeoOn(BLUE);
   sendCommand("wOutTagged.en=1");       // 효과음 재생
+  BatteryPackSend();                    // Nextion 기본값 덮어쓰기 (서버값 1개 → 2개 즉시 반영)
   BoxOpen();                        // 아박 오픈 (논블로킹, 열리면 loop()에서 Nextion 전환)
   pendingOpenScreen = true;             // BOX Opened 이후 pgItemOpen 전환 예약
   BlinkTimer.deleteTimer(blinkTimerId); // 전에 사용된 BlinkTimer를 초기화하고 다시 시작하기 위해 종료
@@ -159,34 +160,16 @@ void PuzzleSolved()
 }
 
 /**
- * @brief PuzzleSolved 함수 실행후 내부 RIFD태그 되어있을때 실행되는 함수 (배터리팩이랑 경험치 가져오는 버그)
+ * @brief PuzzleSolved 함수 실행후 내부 RIFD태그 되어있을때 실행되는 함수 (UIUX만 바뀌고 실제로 배터리와 경험치는 보내지 않음)
  */
 void ItemTook()
 {
-  /* #region  배터리팩 개수 Serial로 확인하는 부분 */
   Serial.println("ItemTook");
-  Serial.println(((int)tag["battery_pack"] + (int)my["battery_pack"]));
-  Serial.println((int)my["max_battery_pack"]);
-  /* #endregion */
-  if (((int)tag["battery_pack"] + (int)my["battery_pack"]) <= (int)tag["max_battery_pack"]){                                    // 태그한 플레이어의 현재 배터리팩 최대 소지 가능 개수가 >= 아이템박스에서 얻을 수 있는거 보다 많거나 같을때
-    sendCommand("page pgItemTaken");                                                                                            // Nextion에서 배터리팩 가져간 후 페이지로 변경 + 효과음은 페이지 pgItemTakenb 변경시 nextion에서 자동재생
-    AllNeoOn(RED);                                                                                                              // 가져가고 나서 USED일땐 전체 빨간색
-    has2wifi.Send((String)(const char *)my["device_name"], "device_state", "used");                                             // 아박 device_state = used 처리
-    has2wifi.Send((String)(const char *)tag["device_name"], "battery_pack", ("+" + (String)(const char *)my["battery_pack"]));  // 태그한 플레이어 배터리팩 개수 추가
-    has2wifi.Send((String)(const char *)tag["device_name"], "exp", ("+" + (String)(const char *)my["exp_pack"]));               // 태그한 플레이어 경험치 추가
-    has2wifi.Send((String)(const char *)my["device_name"], "battery_pack", ("-" + (String)(const char *)my["battery_pack"]));   // 태그된 아박 배터리팩 개수 감소
-    has2wifi.Send((String)(const char *)my["device_name"], "exp_pack", ("-" + (String)(const char *)my["exp_pack"]));           // 태그된 아박 경험치 감소
-    BlinkTimer.deleteTimer(blinkTimerId);                                                                                       // 내부태그 황색 점멸  종료
-    itemBoxUsed = true;                                                                                                         // used 명령 들어와도 재실행 되지 않게 제한하는 bool 변수
-    ptrCurrentMode = WaitFunc;                                                                                                  // ptr 함수의 실행이 null로 변환
-    ptrRfidMode = WaitFunc;                                                                                                     // ptr 함수의 실행이 null로 변환
-  }
-  else                                                  // 태그한 플레이어가 더이상 배터리팩을 소지할 수 없을 때 실행 
-  {
-    Serial.println("NOT ENOUGH IOT BatteryPack");       //
-    sendCommand("page pgItemTakeFail");                 // Nextion에서 더이상 소지할수 없다는 안내창과 효과음 출력을 위해 serial 전송
-    NeoBlink(INNER, RED, 4, 250);                       // 내부 네오픽셀 4번 0.25s 간격으로 적색 점멸 -> Delay사용으로 이 함수에 2초 머물러 있음
-    BlinkTimer.deleteTimer(blinkTimerId);               // 내부 네오픽셀 황색 점멸 타이머 초기화를 위해 종료
-    BlinkTimerStart(INNER, YELLOW);                     // 내부 네오픽셀 황색 점멸 타이머 시작
-  }
+  sendCommand("page pgItemTaken");
+  AllNeoOn(RED);
+  has2wifi.Send((String)(const char *)my["device_name"], "device_state", "used");
+  BlinkTimer.deleteTimer(blinkTimerId);
+  itemBoxUsed = true;
+  ptrCurrentMode = WaitFunc;
+  ptrRfidMode = WaitFunc;
 }

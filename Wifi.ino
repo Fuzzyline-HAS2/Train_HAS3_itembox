@@ -9,7 +9,9 @@ void DataChanged()
     {
         if((String)(const char*)my["game_state"] == "setting"){
             forceAnswerUpdate = true;
-            SettingFunc();
+            has2wifi.Send((String)(const char*)my["device_name"], "game_state", "activate");
+            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");
+            ActivateFunc();
         }
         else if((String)(const char*)my["game_state"] == "ready"){
             forceAnswerUpdate = true;
@@ -85,17 +87,7 @@ void DataChanged()
         }
 
     }
-  // 퍼즐 정답 서버 수신
-  const char* answerKeys[] = {"puzzle_answer_1", "puzzle_answer_2", "puzzle_answer_3", "puzzle_answer_4", "puzzle_answer_5"};
-  int totalAnswers = modeValue[RANGE][ANSWER_CNT];
-  for (int i = 0; i < totalAnswers; i++) {
-      int serverVal = my[answerKeys[i]].as<int>();
-      int prevVal = cur[answerKeys[i]].as<int>();
-      if (serverVal != 0 && (forceAnswerUpdate || serverVal != prevVal)) {
-          modeValue[ANSWER][i] = serverVal;
-          Serial.println(String(answerKeys[i]) + " 서버 수신: " + String(serverVal));
-      }
-  }
+  // 퍼즐 정답은 코드 기본값(modeValue) 고정 사용 — 서버 수신 무시
 
   // puzzle_reset_time 서버 수신
   int serverResetSec = my["puzzle_reset_time"].as<int>();
