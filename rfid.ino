@@ -79,7 +79,8 @@ void RfidLoopOutter()
 }
 
 /**
- * @brief 내외부에서 태그한 카드데이터 string으로 변환후 DB에 요청하여 'role'확인하여 ptrRfidMode로 전송
+ * @brief 내외부에서 태그한 카드데이터 string으로 변환후 ID 기반 고정 역할 판단 후 ptrRfidMode로 전송
+ * G9P1=술래, G9P2=유령, G9P3~G9P8=생존자
  */
 void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 들어왔는지 확인용
 {
@@ -91,18 +92,19 @@ void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 �
   {                                                       //"MMMM"일경우 DB요청 하지 않고 바로 watchdog 실행(DB에 MMMM 플레이어는 존재하지 않아서 요청하면 오류 발생)
     ESP.restart();
   }
-                                                          // 1. 태그한 플레이어의 역할과 생명칩갯수, 최대생명칩갯수 등 읽어오기
-  has2wifi.Receive(tagUser);                              // 2. 술래인지, 플레이어인지 구분
-  if ((String)(const char *)tag["role"] == "player")      // 3. 태그한 사용자가 플레이어 이면
-  { 
+  has2wifi.Receive(tagUser);                              // 플레이어 데이터 수신
+
+  // ID 기반 고정 역할 판단
+  if (tagUser == "G9P1")                                  // 술래: 아무 변화 x
+    Serial.println("Tagger Tagged");
+  else if (tagUser == "G9P2")                             // 유령: 아무 변화 x
+    Serial.println("Ghost Tagged");
+  else if (tagUser.startsWith("G9P") && tagUser[3] >= '3' && tagUser[3] <= '8') // 생존자
+  {
     Serial.println("Player Tagged");
     ptrRfidMode();
   }
-  else if ((String)(const char *)tag["role"] == "tagger") // 4. 태그한 사용자가 술래면 아무 변화 x
-    Serial.println("Tagger Tagged");
-  else if ((String)(const char *)tag["role"] == "ghost")  // 5. 태그한 사용자가 유령이면 아무 변화 x
-    Serial.println("Ghost Tagged");
-  else // 6. 예외 처리
+  else                                                    // 예외 처리
     Serial.println("Wrong TAG");
 }
 
