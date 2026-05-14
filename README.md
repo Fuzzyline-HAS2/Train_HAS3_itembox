@@ -1,4 +1,4 @@
-# updated_itembox
+# Train_HAS3_itembox
 
 ESP32 기반 방탈출 아이템박스 펌웨어입니다.
 RFID 태그 인식 → 엔코더 퍼즐 풀기 → 박스 개방의 흐름으로 동작하며, WiFi를 통해 서버와 상태를 동기화합니다.
@@ -41,8 +41,8 @@ RFID 태그 인식 → 엔코더 퍼즐 풀기 → 박스 개방의 흐름으로
 ## 소프트웨어 구조
 
 ```
-updated_itembox.ino  - setup() / loop()
-updated_itembox.h    - 전역 변수 및 객체 선언
+Train_HAS3_itembox.ino  - setup() / loop()
+Train_HAS3_itembox.h    - 전역 변수 및 객체 선언
 Library_and_pin.h    - 라이브러리 include 및 핀 정의
 Wifi.ino             - WiFi 상태 수신 및 게임 상태 전환 함수
 neopixel.ino         - NeoPixel 초기화 및 제어

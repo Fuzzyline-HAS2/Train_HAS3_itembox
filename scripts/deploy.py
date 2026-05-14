@@ -12,7 +12,7 @@ SCRIPT_DIR    = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR      = os.path.dirname(SCRIPT_DIR)
 
 # ── 기기 저장소에 맞게 변경 ─────────────────────────────────
-SKETCH_FILE   = os.path.join(BASE_DIR, "updated_itembox.ino")
+SKETCH_FILE   = os.path.join(BASE_DIR, "Train_HAS3_itembox.ino")
 VERSION_MACRO = "FIRMWARE_VER"
 # ────────────────────────────────────────────────────────────
 
