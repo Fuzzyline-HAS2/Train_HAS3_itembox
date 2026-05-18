@@ -56,7 +56,8 @@ void Puzzle(void)
             NeoBlink(ENCODER, GREEN, 5, 250);   // 엔코더 네오픽셀 적색 0.25s 간격으로 5번 점멸 -> Delay사용으로 이 함수에 2초 머물러 있음
             answerCnt++;                        // 정답시 다음 문제로 넘어가기 위해 카운트 +1
 
-            if (answerCnt >= modeValue[RANGE][ANSWER_CNT])                        // 모든 정답을 맞추었을때
+            bool nextIsTerminator = (answerCnt < modeValue[RANGE][ANSWER_CNT]) && (modeValue[ANSWER][answerCnt] == -1);
+            if (answerCnt >= modeValue[RANGE][ANSWER_CNT] || nextIsTerminator)    // 모든 정답을 맞추었거나 다음 정답이 -1이면
             {
                 Serial.println("QUIZ SUCCEED");
                 sendCommand("wQuizSolved.en=1");                                    // Nextion으로 "해제 완료" 나레이션 출력 명령 전송

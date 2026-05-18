@@ -44,10 +44,11 @@ void DataChanged()
                 Serial.println("PuzzleSolved");
                 AllNeoOn(BLUE);
                 delay(2000);
+                BatteryPackSend();
                 sendCommand("page pgItemOpen");
                 sendCommand("wOutTagged.en=1");
+                SendLanguage();
                 ExpSend();
-                BatteryPackSend();
                 BoxOpen();
                 lightColor(pixels[INNER], color[YELLOW]);
                 ptrCurrentMode = RfidLoopInner;
@@ -68,19 +69,19 @@ void DataChanged()
             BoxOpen();
             sendCommand("page pgEscapeOpen");
         }
-        else if((String)(const char*)my["device_state"] == "player_win"){ 
+        else if((String)(const char*)my["device_state"] == "player_win"){
             ptrCurrentMode = WaitFunc;
             ptrRfidMode = WaitFunc;
             AllNeoOn(BLUE);
             BoxOpen();
-            sendCommand("page pgPlayerWin");
+            sendCommand("page pgSurvivorWin");
         }
         else if((String)(const char*)my["device_state"] == "player_lose"){
             ptrCurrentMode = WaitFunc;
             ptrRfidMode = WaitFunc;
             AllNeoOn(RED);
             BoxOpen();
-            sendCommand("page pgPlayerLose");
+            sendCommand("page pgSurvivorLose");
         }
         else if((String)(const char*)my["device_state"] == "github") {
             ota.check();
@@ -90,6 +91,7 @@ void DataChanged()
   // 퍼즐 정답은 코드 기본값(modeValue) 고정 사용 — 서버 수신 무시
 
   // puzzle_reset_time 서버 수신
+
   int serverResetSec = my["puzzle_reset_time"].as<int>();
   if (serverResetSec != 0 && (forceAnswerUpdate || serverResetSec != (int)(cur["puzzle_reset_time"] | 0))) {
       puzzleResetTime = (unsigned long)serverResetSec;
@@ -101,6 +103,14 @@ void DataChanged()
   int prevBrightness = cur["brightness"].as<int>();
   if (serverBrightness != prevBrightness) {
       UpdateBrightness();
+  }
+
+  // language 서버 수신 및 Nextion 전송
+  static String prevLanguage = "";
+  String curLanguage = (String)(const char*)shift_machine["selected_language"];
+  if (curLanguage != "" && curLanguage != prevLanguage) {
+      prevLanguage = curLanguage;
+      SendLanguage();
   }
 
   cur = my; // cur 데이터 그룹에 현재 읽어온 데이터 저장

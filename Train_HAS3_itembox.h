@@ -88,6 +88,7 @@ void DisplayCheck();
 void NextionReceived();
 void ExpSend();
 void BatteryPackSend();
+void SendLanguage();
 //****************************************Neopixel SETUP****************************************************************
 void NeopixelInit();
 void EncoderNeopixelOn();
