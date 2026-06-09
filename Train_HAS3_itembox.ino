@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 9
+#define FIRMWARE_VER 10
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
 
@@ -17,7 +17,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    has2wifi.Setup("badland_shoot", "Has3");
+    has2wifi.Setup("badland_shoot", "Code3824@");
     TelnetInit();
     Serial.println("MAC: " + WiFi.macAddress());
     ota.setLogStream(Serial);
