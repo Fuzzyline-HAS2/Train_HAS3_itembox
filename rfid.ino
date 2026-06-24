@@ -80,7 +80,7 @@ void RfidLoopOutter()
 
 /**
  * @brief 내외부에서 태그한 카드데이터 string으로 변환후 ID 기반 고정 역할 판단 후 ptrRfidMode로 전송
- * G2P1=술래, G2P2=유령, G2P3~G2P8=생존자
+ * G9P1=술래, G9P2=유령, G9P3~G9P9=생존자
  */
 void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 들어왔는지 확인용
 {
@@ -95,11 +95,17 @@ void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 �
   has2wifi.Receive(tagUser);                              // 플레이어 데이터 수신
 
   // ID 기반 고정 역할 판단
-  if (tagUser == "G2P1")                                  // 술래: 아무 변화 x
-    Serial.println("Tagger Tagged");
-  else if (tagUser == "G2P2")                             // 유령: 아무 변화 x
-    Serial.println("Ghost Tagged");
-  else if (tagUser.startsWith("G2P") && tagUser[3] >= '3' && tagUser[3] <= '8') // 생존자
+  if (tagUser == "G9P1")                                  // [TEMP] 술래 → 생존자처럼 동작
+  {
+    Serial.println("Tagger Tagged (TEMP: treated as survivor)");
+    ptrRfidMode();
+  }
+  else if (tagUser == "G9P2")                             // [TEMP] 유령 → 생존자처럼 동작
+  {
+    Serial.println("Ghost Tagged (TEMP: treated as survivor)");
+    ptrRfidMode();
+  }
+  else if (tagUser.startsWith("G9P") && tagUser[3] >= '3' && tagUser[3] <= '9') // 생존자
   {
     Serial.println("Player Tagged");
     ptrRfidMode();
