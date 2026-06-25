@@ -10,6 +10,7 @@
  */
 
 #define FIRMWARE_VER 11
+#define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
 
@@ -33,6 +34,12 @@ void setup()
     ota.setOnSkip([]() {
         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "setting");
     });
+    ota.setPartitionUpdate(
+        "https://raw.githubusercontent.com/Fuzzyline-HAS2/Train_HAS3_itembox/third_store/partitions.bin",
+        "https://raw.githubusercontent.com/Fuzzyline-HAS2/Train_HAS3_itembox/third_store/partitions.sig",
+        "https://raw.githubusercontent.com/Fuzzyline-HAS2/Train_HAS3_itembox/third_store/partition_version.txt",
+        PARTITION_VER
+    );
     NeopixelInit();
     RfidInit();
     MotorInit();
