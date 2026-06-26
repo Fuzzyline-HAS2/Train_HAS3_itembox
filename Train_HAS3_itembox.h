@@ -101,17 +101,17 @@ const int NeopixelNum = 3;
 enum {PN532 = 0, INNER, ENCODER};
 enum {WHITE = 0, RED, YELLOW, GREEN, BLUE, PURPLE, BLACK, BLUE0, BLUE1, BLUE2, BLUE3};
 // Neopixel 색상정보
-int color[11][3] = {{255, 255, 255}, //WHITE
-                    {255, 0,   0  }, //RED
-                    {255, 255, 0  }, //YELLOW
-                    {0,   255, 0  }, //GREEN
-                    {0,   0,   255}, //BLUE
-                    {255, 0,   255}, //PURPLE
+int color[11][3] = {{100, 100, 100}, //WHITE
+                    {100, 0,   0  }, //RED
+                    {100, 100, 0  }, //YELLOW
+                    {0,   100, 0  }, //GREEN
+                    {0,   0,   100}, //BLUE
+                    {100, 0,   100}, //PURPLE
                     {0,   0,   0  }, //BLACK
-                    {0,   0,   64 }, //ENCODERBLUE0
-                    {0,   0,   128}, //ENCODERBLUE1
-                    {0,   0,   192}, //ENCODERBLUE2
-                    {0,   0,   255}}; //ENCODERBLUE3
+                    {0,   0,   40 }, //ENCODERBLUE0
+                    {0,   0,   60 }, //ENCODERBLUE1
+                    {0,   0,   80 }, //ENCODERBLUE2
+                    {0,   0,   100}}; //ENCODERBLUE3
 
 const int neopixel_num = 3; // 설치된 네오픽셀의 개수
 
@@ -143,7 +143,7 @@ void ItemTook();
 
 
 //****************************************MOTOR SETUP****************************************************************
-bool puzzleMode = false;         // 퍼즐 진행 중 여부 (WiFi 수신 시 노이즈 차단용)
+bool puzzleMode = false;         // 퍼즐 진행 중 여부 (true일 때 WiFi 타이머 삭제됨)
 bool boxMotorRunning = false;    // 모터 동작 중 여부
 bool boxClosing = false;         // true=닫히는 중, false=열리는 중
 bool pendingOpenScreen = false;  // BOX Opened 후 Nextion 화면 전환 대기
