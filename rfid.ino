@@ -120,7 +120,8 @@ void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 �
 void StartPuzzle()
 {
   Serial.println("StartPuzzle");
-  puzzleMode = true;                  // WiFi 수신 시 엔코더 노이즈 차단 모드 ON
+  puzzleMode = true;
+  WifiTimer.deleteTimer(wifiTimerId); // 퍼즐 진입 시 WiFi 완전 차단
   answerCnt = 0;
   rfidLastSeenTime = millis();        // RFID 이탈 감지 기준 시각 초기화
   GameTimer.deleteTimer(gameTimerId);
@@ -138,6 +139,7 @@ void ResumePuzzle()
 {
   Serial.println("ResumePuzzle - answerCnt: " + String(answerCnt));
   puzzleMode = true;
+  WifiTimer.deleteTimer(wifiTimerId); // 퍼즐 재진입 시 WiFi 완전 차단
   rfidLastSeenTime = millis();
   GameTimer.deleteTimer(gameTimerId);
   gameTimerId = GameTimer.setInterval(puzzleResetTime, GameTimerFunc); // 재진입 시 비입력 타이머 재시작
@@ -174,9 +176,11 @@ void ItemTook()
 {
   Serial.println("ItemTook");
   sendCommand("page pgItemTaken");
-  AllNeoOn(RED);
+  AllNeoOn(BLUE);
   has2wifi.Send((String)(const char *)my["device_name"], "device_state", "used");
   BlinkTimer.deleteTimer(blinkTimerId);
+  WifiTimer.deleteTimer(wifiTimerId);
+  wifiTimerId = WifiTimer.setInterval(wifiTime, WifiIntervalFunc); // 아이템 획득 완료 후 WiFi 재개
   itemBoxUsed = true;
   ptrCurrentMode = WaitFunc;
   ptrRfidMode = WaitFunc;

@@ -5,7 +5,10 @@
       "Bash(git restore *)",
       "Bash(git pull *)",
       "Bash(git merge *)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

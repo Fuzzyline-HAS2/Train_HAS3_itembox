@@ -17,6 +17,8 @@ void Puzzle(void)
     if (millis() - rfidLastSeenTime > rfidPuzzleTimeout) {
         Serial.println("Puzzle Paused: RFID 태그 없음");
         puzzleMode = false;
+        WifiTimer.deleteTimer(wifiTimerId);
+        wifiTimerId = WifiTimer.setInterval(wifiTime, WifiIntervalFunc); // 퍼즐 중단 시 WiFi 재개
         ledcWrite(VIBRATION_RANGE_PIN, 0);
         AllNeoOn(YELLOW);
         detachInterrupt(encoderPinA);

@@ -9,18 +9,7 @@ void TimerInit()
 
 void WifiIntervalFunc()
 {
-    if (puzzleMode) {
-        // 퍼즐 중: 인터럽트 잠깐 해제 → WiFi 수신 → 엔코더 값 복원 → 인터럽트 재연결
-        long savedEncoder = encoderValue;
-        detachInterrupt(encoderPinA);
-        detachInterrupt(encoderPinB);
-        has2wifi.Loop(DataChanged);
-        encoderValue = savedEncoder;
-        attachInterrupt(encoderPinA, updateEncoder, CHANGE);
-        attachInterrupt(encoderPinB, updateEncoder, CHANGE);
-    } else {
-        has2wifi.Loop(DataChanged);
-    }
+    has2wifi.Loop(DataChanged);
 }
 void GameTimerFunc(){
     puzzleMode = false;
