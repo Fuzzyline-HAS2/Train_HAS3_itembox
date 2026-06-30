@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 17
+#define FIRMWARE_VER 18
 #define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
@@ -75,6 +75,12 @@ void loop()
                     else
                         sendCommand("wEQuizSolved.en=1");
                     pendingOpenScreen = false;
+                    if (!itemBoxUsed)
+                        has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+                    if (!itemBoxUsed) {
+                        ptrCurrentMode = RfidLoopInner;
+                        ptrRfidMode = ItemTook;
+                    }
                 }
             }
         }
