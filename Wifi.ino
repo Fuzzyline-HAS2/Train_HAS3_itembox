@@ -88,7 +88,39 @@ void DataChanged()
         }
 
     }
-  // 퍼즐 정답은 코드 기본값(modeValue) 고정 사용 — 서버 수신 무시
+  // puzzle_answer_1~5 서버 수신
+  {
+      const char* answerKeys[] = {"puzzle_answer_1", "puzzle_answer_2", "puzzle_answer_3", "puzzle_answer_4", "puzzle_answer_5"};
+
+      bool anyChanged = false;
+      for (int i = 0; i < 5; i++) {
+          if (my[answerKeys[i]].as<int>() != cur[answerKeys[i]].as<int>()) { anyChanged = true; break; }
+      }
+
+      if (forceAnswerUpdate || anyChanged) {
+          bool allNegOne = true;
+          for (int i = 0; i < 5; i++) {
+              if (my[answerKeys[i]].as<int>() != -1) { allNegOne = false; break; }
+          }
+
+          if (allNegOne) {
+              // 서버가 모두 -1 → 로컬 기본값 복원
+              int localDefaults[] = {13, 43, -1, -1, -1};
+              for (int i = 0; i < 5; i++) modeValue[ANSWER][i] = localDefaults[i];
+              Serial.println("puzzle_answer 전부 -1 수신 → 로컬 기본값 사용");
+          } else {
+              // 서버값으로 갱신 (0 = 미설정, 건너뜀)
+              int totalAnswers = modeValue[RANGE][ANSWER_CNT];
+              for (int i = 0; i < totalAnswers; i++) {
+                  int serverVal = my[answerKeys[i]].as<int>();
+                  if (serverVal != 0) {
+                      modeValue[ANSWER][i] = serverVal;
+                      Serial.println("puzzle_answer_" + String(i + 1) + " 서버 수신: " + String(serverVal));
+                  }
+              }
+          }
+      }
+  }
 
   // puzzle_reset_time 서버 수신
 
@@ -103,6 +135,13 @@ void DataChanged()
   int prevBrightness = cur["brightness"].as<int>();
   if (serverBrightness != prevBrightness) {
       UpdateBrightness();
+  }
+
+  // battery_pack 서버 수신 및 Nextion 갱신
+  int serverBattery = my["battery_pack"].as<int>();
+  int prevBattery = cur["battery_pack"].as<int>();
+  if (serverBattery != prevBattery) {
+      BatteryPackSend();
   }
 
   // language 서버 수신 및 Nextion 전송

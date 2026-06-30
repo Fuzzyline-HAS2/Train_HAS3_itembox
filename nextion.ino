@@ -51,7 +51,7 @@ void ExpSend(){
     }
 }
 void BatteryPackSend(){
-    // 훈련소 시나리오: 배터리 2개 고정
-    sendCommand("picBatteryPack.pic=4");
-    sendCommand("pgItemOpen.vBatteryPack.val=2");
+    int val = String((const char*)my["battery_pack"]).toInt();
+    if (val <= 0) return;
+    sendCommand(("pgItemOpen.vBatteryPack.val=" + String(val)).c_str());
 }

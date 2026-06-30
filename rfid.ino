@@ -164,9 +164,8 @@ void PuzzleSolved()
   BlinkTimer.deleteTimer(blinkTimerId); // 전에 사용된 BlinkTimer를 초기화하고 다시 시작하기 위해 종료
   BlinkTimerStart(INNER, YELLOW);       // 내부태그 네오픽셀 노란색 점멸 시작
   GameTimer.deleteTimer(gameTimerId);   // Puzzle함수 -> PuzzleSolved함수 진행되면 이후로는 Activate로 초기화 되지 않게 타이머 종료(기획대로)
-  ptrCurrentMode = RfidLoopInner;       // ptr함수의 주소를 RFIDOuter -> RfidInner로 교체 (내부태그하여 아이템가져가기 위해)
-  ptrRfidMode = ItemTook;               // 내부태그되고 CheckingPlayer 함수가 실행되면 ItemTook로 실행되게 주소 변경
-  has2wifi.Send((String)(const char *)my["device_name"], "device_state", "open"); // 하드웨어 동작 완료 후 서버에 상태 전송
+  ptrCurrentMode = WaitFunc;            // 모터 구동 중 내부 태그 차단. loop()에서 모터 정지 후 RfidLoopInner로 전환
+  ptrRfidMode = ItemTook;
 }
 
 /**
@@ -179,8 +178,7 @@ void ItemTook()
   AllNeoOn(BLUE);
   has2wifi.Send((String)(const char *)my["device_name"], "device_state", "used");
   BlinkTimer.deleteTimer(blinkTimerId);
-  WifiTimer.deleteTimer(wifiTimerId);
-  wifiTimerId = WifiTimer.setInterval(wifiTime, WifiIntervalFunc); // 아이템 획득 완료 후 WiFi 재개
+  wifiTimerId = WifiTimer.setInterval(wifiTime, WifiIntervalFunc); // 아이템 획득 완료 후 WiFi 타이머 재개
   itemBoxUsed = true;
   ptrCurrentMode = WaitFunc;
   ptrRfidMode = WaitFunc;
