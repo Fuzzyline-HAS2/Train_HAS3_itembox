@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 23
+#define FIRMWARE_VER 24
 #define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
@@ -66,16 +66,9 @@ void loop()
                 boxMotorRunning = false;
                 Serial.println("BOX Opened");
                 if (pendingOpenScreen) {
-                    BatteryPackSend();
-                    sendCommand("page pgItemOpen");
-                    SendLanguage();
-                    ExpSend();
-                    if ((String)(const char*)shift_machine["selected_language"] != "EN")
-                        sendCommand("wQuizSolved.en=1");
-                    else
-                        sendCommand("wEQuizSolved.en=1");
                     pendingOpenScreen = false;
-                    // 화면 전환을 끝낸 뒤 서버 보고. 모터 정지·안정화 이후라 WiFi 전류 피크가 모터와 겹치지 않음.
+                    // 넥션 화면은 PuzzleSolved()에서 BoxOpen()과 동시에 이미 전송됨.
+                    // 여기서는 모터 정지 후 서버 보고 + 내부 태그 활성화만 처리.
                     if (!itemBoxUsed)
                         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
                     if (!itemBoxUsed) {
