@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 20
+#define FIRMWARE_VER 21
 #define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
@@ -66,6 +66,7 @@ void loop()
                 boxMotorRunning = false;
                 Serial.println("BOX Opened");
                 if (pendingOpenScreen) {
+                    delay(motorSettleDelay);  // 모터 정지 후 전원 레일 안정화 대기 → 이어지는 WiFi 송신 전류가 모터 전류와 겹치지 않게 (brownout 방지)
                     BatteryPackSend();
                     sendCommand("page pgItemOpen");
                     SendLanguage();
@@ -75,8 +76,18 @@ void loop()
                     else
                         sendCommand("wEQuizSolved.en=1");
                     pendingOpenScreen = false;
+                    // 화면 전환을 끝낸 뒤 서버 보고. 모터 정지·안정화 이후라 WiFi 전류 피크가 모터와 겹치지 않음.
                     if (!itemBoxUsed)
                         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+                    if (!itemBoxUsed) {
+                        ptrCurrentMode = RfidLoopInner;
+                        ptrRfidMode = ItemTook;
+                    }
+                }
+                // 서버 open 경로: 모터 정지 후 전원 안정화 대기 → 내부 태그 활성화.
+                if (pendingInnerEnable) {
+                    delay(motorSettleDelay);
+                    pendingInnerEnable = false;
                     if (!itemBoxUsed) {
                         ptrCurrentMode = RfidLoopInner;
                         ptrRfidMode = ItemTook;
