@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 22
+#define FIRMWARE_VER 23
 #define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
