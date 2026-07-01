@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 21
+#define FIRMWARE_VER 22
 #define PARTITION_VER 1
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
@@ -66,7 +66,6 @@ void loop()
                 boxMotorRunning = false;
                 Serial.println("BOX Opened");
                 if (pendingOpenScreen) {
-                    delay(motorSettleDelay);  // 모터 정지 후 전원 레일 안정화 대기 → 이어지는 WiFi 송신 전류가 모터 전류와 겹치지 않게 (brownout 방지)
                     BatteryPackSend();
                     sendCommand("page pgItemOpen");
                     SendLanguage();
