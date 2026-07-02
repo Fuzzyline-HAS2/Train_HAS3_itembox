@@ -147,8 +147,10 @@ bool puzzleMode = false;         // 퍼즐 진행 중 여부 (true일 때 WiFi �
 bool boxMotorRunning = false;    // 모터 동작 중 여부
 bool boxClosing = false;         // true=닫히는 중, false=열리는 중
 bool pendingOpenScreen = false;  // BOX Opened 후 Nextion 화면 전환 대기
+bool pendingInnerEnable = false; // 서버 open 경로: BOX Opened 후 내부 태그(RfidLoopInner) 활성화 대기 - brownout 방지
 unsigned long motorStartTime = 0;            // 모터 구동 시작 시각
 const unsigned long motorOpenDuration = 4000; // 열기 모터 구동 시간(ms) - 스위치 미사용, 타이머로 정지
+const unsigned long motorSettleDelay = 200;   // 모터 정지 후 WiFi 송신 전 전원 레일 안정화 대기(ms) - brownout 방지
 const int MotorFreq = 5000;
 const int MotorResolution = 8;
 const int MotorLedChannel = 3;

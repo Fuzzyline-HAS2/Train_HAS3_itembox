@@ -14,6 +14,7 @@ void RfidInit()
     else
     {
       nfc[i].SAMConfig();
+      nfc[i].setPassiveActivationRetries(0x01); // 기본값(무한 재시도)이면 카드 없을 때 InList 응답 대기로 ~1초씩 블로킹됨
       Serial.println("PN532 연결성공 : " + String(i));
       rfid_init_complete[i] = true;
       AllNeoOn(YELLOW);
@@ -26,22 +27,17 @@ void RfidInit()
  */
 void RfidLoopInner()
 {
-  uint8_t uid[3][7] = {{0, 0, 0, 0, 0, 0, 0},
-                       {0, 0, 0, 0, 0, 0, 0},
-                       {0, 0, 0, 0, 0, 0, 0}}; // Buffer to store the returned UID
-  uint8_t uidLength[] = {0};                   // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
+  uint8_t uid[7] = {0};   // Buffer to store the returned UID
+  uint8_t uidLength = 0;  // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
   uint8_t data[32];
-  byte pn532_packetbuffer11[64];
-  pn532_packetbuffer11[0] = 0x00;
-  if (nfc[INPN532].sendCommandCheckAck(pn532_packetbuffer11, 1))
-  {                                                                           // rfid 통신 가능한 상태인지 확인
-    if (nfc[INPN532].startPassiveTargetIDDetection(PN532_MIFARE_ISO14443A))
-    {                                                                         // rfid에 tag 찍혔는지 확인용 //데이터 들어오면 uid정보 가져오기
-      if (nfc[INPN532].ntag2xx_ReadPage(7, data))
-      {                                                                       // ntag 데이터에 접근해서 불러와서 data행열에 저장
-        Serial.println("TAGGGED");
-        CheckingPlayers(data);
-      }
+  // readPassiveTargetID: InList 응답을 끝까지 소비하고 타겟 수를 확인.
+  // setPassiveActivationRetries(1) 덕분에 카드가 없어도 150ms 안에 반환됨 (기존 패턴은 ~1초 블로킹)
+  if (nfc[INPN532].readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 150))
+  {
+    if (nfc[INPN532].ntag2xx_ReadPage(7, data))
+    {                                                                       // ntag 데이터에 접근해서 불러와서 data행열에 저장
+      Serial.println("TAGGGED");
+      CheckingPlayers(data);
     }
   }
   // TODO InnerRFID 루프시 연결 안되면 워치독
@@ -54,22 +50,17 @@ void RfidLoopInner()
  */
 void RfidLoopOutter()
 {
-  uint8_t uid[3][7] = {{0, 0, 0, 0, 0, 0, 0},
-                       {0, 0, 0, 0, 0, 0, 0},
-                       {0, 0, 0, 0, 0, 0, 0}}; // Buffer to store the returned UID
-  uint8_t uidLength[] = {0};                   // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
+  uint8_t uid[7] = {0};   // Buffer to store the returned UID
+  uint8_t uidLength = 0;  // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
   uint8_t data[32];
-  byte pn532_packetbuffer11[64];
-  pn532_packetbuffer11[0] = 0x00;
-  if (nfc[OUTPN532].sendCommandCheckAck(pn532_packetbuffer11, 1))
-  {                                                                           // rfid 통신 가능한 상태인지 확인
-    if (nfc[OUTPN532].startPassiveTargetIDDetection(PN532_MIFARE_ISO14443A))
-    {                                                                         // rfid에 tag 찍혔는지 확인용 //데이터 들어오면 uid정보 가져오기
-      if (nfc[OUTPN532].ntag2xx_ReadPage(7, data))
-      {                                                                       // ntag 데이터에 접근해서 불러와서 data행열에 저장
-        Serial.println("TAGGGED");
-        CheckingPlayers(data);
-      }
+  // readPassiveTargetID: InList 응답을 끝까지 소비하고 타겟 수를 확인.
+  // setPassiveActivationRetries(1) 덕분에 카드가 없어도 150ms 안에 반환됨 (기존 패턴은 ~1초 블로킹)
+  if (nfc[OUTPN532].readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 150))
+  {
+    if (nfc[OUTPN532].ntag2xx_ReadPage(7, data))
+    {                                                                       // ntag 데이터에 접근해서 불러와서 data행열에 저장
+      Serial.println("TAGGGED");
+      CheckingPlayers(data);
     }
   }
   // TODO OutterRFID 루프시 연결 안되면 워치독
@@ -92,7 +83,8 @@ void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 �
   {                                                       //"MMMM"일경우 DB요청 하지 않고 바로 watchdog 실행(DB에 MMMM 플레이어는 존재하지 않아서 요청하면 오류 발생)
     ESP.restart();
   }
-  has2wifi.Receive(tagUser);                              // 플레이어 데이터 수신
+  if (ptrRfidMode != ResumePuzzle)                        // 퍼즐 재진입은 블로킹 HTTP 없이 즉시 복귀 (역할 판단은 아래 ID 기반이라 서버 조회 불필요)
+    has2wifi.Receive(tagUser);                            // 플레이어 데이터 수신
 
   // ID 기반 고정 역할 판단
   if (tagUser == "G9P1")                                  // [TEMP] 술래 → 생존자처럼 동작
@@ -100,10 +92,9 @@ void CheckingPlayers(uint8_t rfidData[32])                // 어떤 카드가 �
     Serial.println("Tagger Tagged (TEMP: treated as survivor)");
     ptrRfidMode();
   }
-  else if (tagUser == "G9P2")                             // [TEMP] 유령 → 생존자처럼 동작
+  else if (tagUser == "G9P2")                             // 유령 → 퍼즐 진입 불가
   {
-    Serial.println("Ghost Tagged (TEMP: treated as survivor)");
-    ptrRfidMode();
+    Serial.println("Ghost Tagged (ignored)");
   }
   else if (tagUser.startsWith("G9P") && tagUser[3] >= '3' && tagUser[3] <= '9') // 생존자
   {
@@ -157,14 +148,21 @@ void PuzzleSolved()
   itemBoxSelfOpen = true;                                                         // 태그하면 아이템박스가 open 상태 임으로 메인에서 open 명령 들어와도 재실행되지 않게 제한하는 bool 변수
   Serial.println("PuzzleSolved");
   AllNeoOn(BLUE);
-  sendCommand("wOutTagged.en=1");       // 효과음 재생
-  BatteryPackSend();                    // Nextion 기본값 덮어쓰기 (서버값 1개 → 2개 즉시 반영)
-  BoxOpen();                        // 아박 오픈 (논블로킹, 열리면 loop()에서 Nextion 전환)
-  pendingOpenScreen = true;             // BOX Opened 이후 pgItemOpen 전환 예약
+  BoxOpen();                        // 아박 오픈 (논블로킹). 모터를 먼저 돌려 박스가 즉시 열리기 시작한다.
+  BatteryPackSend();
+  sendCommand("page pgItemOpen");   // 모터 구동과 동시에 즉시 넥션 화면 전환
+  SendLanguage();
+  ExpSend();
+  if ((String)(const char*)shift_machine["selected_language"] != "EN")
+      sendCommand("wQuizSolved.en=1");
+  else
+      sendCommand("wEQuizSolved.en=1");
+  pendingOpenScreen = true;             // 모터 종료 후 서버 보고 + RfidLoopInner 활성화 예약
   BlinkTimer.deleteTimer(blinkTimerId); // 전에 사용된 BlinkTimer를 초기화하고 다시 시작하기 위해 종료
   BlinkTimerStart(INNER, YELLOW);       // 내부태그 네오픽셀 노란색 점멸 시작
   GameTimer.deleteTimer(gameTimerId);   // Puzzle함수 -> PuzzleSolved함수 진행되면 이후로는 Activate로 초기화 되지 않게 타이머 종료(기획대로)
-  ptrCurrentMode = WaitFunc;            // 모터 구동 중 내부 태그 차단. loop()에서 모터 정지 후 RfidLoopInner로 전환
+  nfc[OUTPN532].SAMConfig();            // InListPassiveTarget 잔류 타겟 해제 - 다음 게임 Activate 시 RfidLoopOutter 정상 동작 보장
+  ptrCurrentMode = WaitFunc;            // 모터 구동 중에는 내부 태그를 받지 않음. loop()에서 모터 정지+안정화+open 보고가 끝난 뒤 RfidLoopInner로 전환
   ptrRfidMode = ItemTook;
 }
 

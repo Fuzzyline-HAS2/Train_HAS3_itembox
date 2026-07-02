@@ -16,6 +16,9 @@ void MotorInit()
 }
 void BoxClose()
 {
+    // 닫기 시작 = 진행 중이던 열기-완료 시퀀스 취소. (모터 정지 전에 close가 끼어들면 플래그가 잔존해 다음 열림 때 오작동하는 것 방지)
+    pendingOpenScreen = false;
+    pendingInnerEnable = false;
     if (digitalRead(BOXSWITCH_PIN) == HIGH) { Serial.println("BOX already closed"); return; } // HIGH = 닫힘 확인, 이미 닫혀있으면 스킵
     Serial.println("BOX Close");
     pinMode(MOTOR_INA1_PIN, OUTPUT);

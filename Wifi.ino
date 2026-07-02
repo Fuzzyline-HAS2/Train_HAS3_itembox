@@ -46,13 +46,13 @@ void DataChanged()
                 delay(2000);
                 BatteryPackSend();
                 sendCommand("page pgItemOpen");
-                sendCommand("wOutTagged.en=1");
                 SendLanguage();
                 ExpSend();
                 BoxOpen();
                 lightColor(pixels[INNER], color[YELLOW]);
-                ptrCurrentMode = RfidLoopInner;
+                ptrCurrentMode = WaitFunc;     // 모터 구동 중에는 내부 태그를 받지 않음 (loop에서 모터 정지+안정화 후 RfidLoopInner로 전환)
                 ptrRfidMode = ItemTook;
+                pendingInnerEnable = true;     // BOX Opened 후 내부 태그 활성화 예약 (brownout 방지)
                 BlinkTimer.deleteTimer(blinkTimerId);
                 BlinkTimerStart(INNER, YELLOW);                     //내부태그 노란색 점멸 시작
                 GameTimer.deleteTimer(gameTimerId);                 // 엔코더 다 푼 이후에는 로그아웃 없이 현 상태 유지
@@ -160,7 +160,8 @@ void WaitFunc(void)
 }
 void SettingFunc(void)
 {
-    sendCommand("page pgWait");
+    sendCommand("page pgSetting");
+    SendLanguage();
     Serial.println("SETTING");
     UpdateBrightness();
     AllNeoOn(WHITE);
@@ -177,7 +178,8 @@ void SettingFunc(void)
 }
 void ActivateFunc(void)
 {
-    sendCommand("page pgWait");
+    sendCommand("page pgSetting");
+    SendLanguage();
     encoderValue = 165;
     answerCnt = 0;
     Serial.println("ACTIVATE");
@@ -194,7 +196,8 @@ void ActivateFunc(void)
 }
 void ReadyFunc(void)
 {
-    sendCommand("page pgWait");
+    sendCommand("page pgSetting");
+    SendLanguage();
     Serial.println("READY");
     UpdateBrightness();
     AllNeoOn(RED);
