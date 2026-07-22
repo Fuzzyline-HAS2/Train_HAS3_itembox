@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 32
+#define FIRMWARE_VER 33
 #include "Train_HAS3_itembox.h"
 #include "esp_system.h"
 
